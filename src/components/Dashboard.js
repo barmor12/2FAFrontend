@@ -6,7 +6,7 @@ const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [qrCode, setQrCode] = useState("");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [token, setToken] = useState(""); // טוקן 2FA לאימות
+  const [twoFAToken, setTwoFAToken] = useState(""); // טוקן 2FA
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const Dashboard = () => {
         });
 
         setUserData(res.data);
-        setIs2FAEnabled(res.data.twoFactorEnabled); // קבלת הסטטוס של 2FA
+        setIs2FAEnabled(res.data.twoFactorEnabled); // בדיקה אם ה-2FA מופעל
       } catch (err) {
         console.error(err);
         navigate("/"); // יש בעיה עם הטוקן או החיבור, מחזיר לדף ההתחברות
@@ -74,10 +74,9 @@ const Dashboard = () => {
   const handleVerify2FA = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Verifying 2FA with token:", token); // בדיקת שמירת הטוקן
       const res = await axios.post(
         "/api/auth/2fa/verify",
-        { token }, // שליחת טוקן ה-2FA שהוזן
+        { userId: userData._id, token: twoFAToken }, // שליחת טוקן ה-2FA שהוזן
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -118,8 +117,8 @@ const Dashboard = () => {
                 <img src={qrCode} alt="QR Code" />
                 <input
                   type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
+                  value={twoFAToken}
+                  onChange={(e) => setTwoFAToken(e.target.value)}
                   placeholder="Enter 2FA Token"
                 />
                 <button onClick={handleVerify2FA}>Verify 2FA</button>
