@@ -7,6 +7,7 @@ const Dashboard = () => {
   const [qrCode, setQrCode] = useState("");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [twoFAToken, setTwoFAToken] = useState(""); // טוקן 2FA
+  const [loading, setLoading] = useState(true); // מצב טעינה
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +27,7 @@ const Dashboard = () => {
 
         setUserData(res.data);
         setIs2FAEnabled(res.data.twoFactorEnabled); // בדיקה אם ה-2FA מופעל
+        setLoading(false); // כיבוי מצב הטעינה לאחר קבלת הנתונים
       } catch (err) {
         console.error(err);
         navigate("/"); // יש בעיה עם הטוקן או החיבור, מחזיר לדף ההתחברות
@@ -34,6 +36,12 @@ const Dashboard = () => {
 
     fetchData();
   }, [navigate]);
+
+  // פונקציית התנתקות
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // מחיקת הטוקן מה-localStorage
+    navigate("/"); // הפניה חזרה לדף ההתחברות
+  };
 
   const handleEnable2FA = async () => {
     try {
@@ -66,6 +74,7 @@ const Dashboard = () => {
         }
       );
       setIs2FAEnabled(false); // עדכון סטטוס 2FA
+      setQrCode(""); // הסרת ה-QR
     } catch (err) {
       console.error("Failed to disable 2FA", err);
     }
@@ -86,16 +95,18 @@ const Dashboard = () => {
       if (res.data.verified) {
         alert("2FA verified successfully!");
         setIs2FAEnabled(true);
+        setQrCode(""); // הסרת קוד ה-QR לאחר אימות מוצלח
       } else {
         alert("Invalid 2FA token.");
       }
     } catch (err) {
       console.error("Failed to verify 2FA", err);
+      alert("2FA verification failed");
     }
   };
 
-  if (!userData) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <div>Loading...</div>; // מצב טעינה עד שהנתונים יגיעו
   }
 
   return (
@@ -127,6 +138,9 @@ const Dashboard = () => {
           </>
         )}
       </div>
+      <button onClick={handleLogout} style={{ marginTop: "20px" }}>
+        Logout
+      </button>
     </div>
   );
 };
