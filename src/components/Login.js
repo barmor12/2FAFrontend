@@ -12,6 +12,7 @@ const Login = () => {
   const [userId, setUserId] = useState("");
   const navigate = useNavigate();
 
+  // תהליך ההתחברות
   const handleLogin = async () => {
     try {
       const res = await axios.post("/api/auth/login", { email, password });
@@ -20,20 +21,24 @@ const Login = () => {
         setQrCode(res.data.qrCode);
         setUserId(res.data.userId);
       } else {
+        // שמירת הטוקן
         localStorage.setItem("token", res.data.token);
+        console.log("Token saved: ", res.data.token); // בדיקת שמירת הטוקן
         navigate("/dashboard");
       }
     } catch (err) {
       console.error(err);
-      alert("Login failed");
+      alert("Login failed: " + err.response.data.msg);
     }
   };
 
+  // תהליך אימות 2FA
   const handleVerify2FA = async () => {
     try {
       const res = await axios.post("/api/auth/2fa/verify", { userId, token });
       if (res.data.verified) {
         localStorage.setItem("token", res.data.token);
+        console.log("2FA Token verified, navigating to dashboard...");
         navigate("/dashboard");
       } else {
         alert("Invalid 2FA token");

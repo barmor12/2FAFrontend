@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
-import "./dashboard.css";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
-  const [newPassword, setNewPassword] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [profileImage, setProfileImage] = useState(null);
+  const [qrCode, setQrCode] = useState("");
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [token, setToken] = useState(""); // טוקן 2FA לאימות
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +14,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/"); // אם אין טוקן, מחזיר לדף ההתחברות
+          navigate("/"); // אין טוקן, מחזיר לדף ההתחברות
           return;
         }
 
@@ -26,41 +25,21 @@ const Dashboard = () => {
         });
 
         setUserData(res.data);
-        setProfileImage(res.data.profileImage);
+        setIs2FAEnabled(res.data.twoFactorEnabled); // קבלת הסטטוס של 2FA
       } catch (err) {
         console.error(err);
-        navigate("/"); // אם יש בעיה עם הטוקן, מחזיר לדף ההתחברות
+        navigate("/"); // יש בעיה עם הטוקן או החיבור, מחזיר לדף ההתחברות
       }
     };
 
     fetchData();
   }, [navigate]);
 
-  const handlePasswordChange = async () => {
+  const handleEnable2FA = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        "/api/auth/user",
-        { password: newPassword },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      alert("Password updated successfully");
-      setNewPassword("");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update password");
-    }
-  };
-
-  const handle2FAToggle = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `/api/auth/2fa/${userData.twoFactorEnabled ? "disable" : "setup"}`,
+      const res = await axios.post(
+        "/api/auth/2fa/setup",
         {},
         {
           headers: {
@@ -68,38 +47,51 @@ const Dashboard = () => {
           },
         }
       );
-      alert(
-        `2FA ${userData.twoFactorEnabled ? "disabled" : "enabled"} successfully`
-      );
-      window.location.reload(); // טען מחדש את הדף כדי לעדכן את המצב
+      setQrCode(res.data.qrCode); // הצגת קוד QR לסריקה
     } catch (err) {
-      console.error(err);
-      alert("Failed to toggle 2FA");
+      console.error("Failed to enable 2FA", err);
     }
   };
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
-
-  const handleProfileImageUpload = async () => {
+  const handleDisable2FA = async () => {
     try {
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("profileImage", selectedFile);
-
-      const res = await axios.post("/api/auth/upload-profile-image", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setProfileImage(res.data.profileImageUrl); // עדכן את התמונה בפרופיל עם הקישור החדש
-      alert("Profile image updated successfully");
+      await axios.post(
+        "/api/auth/2fa/disable",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIs2FAEnabled(false); // עדכון סטטוס 2FA
     } catch (err) {
-      console.error(err);
-      alert("Failed to upload profile image");
+      console.error("Failed to disable 2FA", err);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Verifying 2FA with token:", token); // בדיקת שמירת הטוקן
+      const res = await axios.post(
+        "/api/auth/2fa/verify",
+        { token }, // שליחת טוקן ה-2FA שהוזן
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.data.verified) {
+        alert("2FA verified successfully!");
+        setIs2FAEnabled(true);
+      } else {
+        alert("Invalid 2FA token.");
+      }
+    } catch (err) {
+      console.error("Failed to verify 2FA", err);
     }
   };
 
@@ -108,44 +100,33 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Welcome, {userData.email}</h1>
-        <div className="profile-section">
-          {profileImage ? (
-            <img src={profileImage} alt="Profile" className="profile-image" />
-          ) : (
-            <div className="profile-placeholder">Upload Image</div>
-          )}
-          <input type="file" onChange={handleFileChange} />
-          <button
-            className="dashboard-button"
-            onClick={handleProfileImageUpload}
-          >
-            Upload
-          </button>
-        </div>
-        <button className="dashboard-button" onClick={handle2FAToggle}>
-          {userData.twoFactorEnabled ? "Disable 2FA" : "Enable 2FA"}
-        </button>
-      </div>
-      <div className="dashboard-content">
-        <div>
-          <h2>Change Password</h2>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Enter new password"
-            className="auth-input"
-          />
-          <button onClick={handlePasswordChange} className="dashboard-button">
-            Change Password
-          </button>
-        </div>
-        <Link to="/setup-2fa" className="dashboard-link">
-          {userData.twoFactorEnabled ? "Manage 2FA" : "Setup 2FA"}
-        </Link>
+    <div>
+      <h1>Welcome, {userData.email}</h1>
+      <div>
+        {is2FAEnabled ? (
+          <>
+            <p>2FA is enabled</p>
+            <button onClick={handleDisable2FA}>Disable 2FA</button>
+          </>
+        ) : (
+          <>
+            <p>2FA is disabled</p>
+            <button onClick={handleEnable2FA}>Enable 2FA</button>
+            {qrCode && (
+              <div>
+                <p>Scan this QR code with your 2FA app:</p>
+                <img src={qrCode} alt="QR Code" />
+                <input
+                  type="text"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="Enter 2FA Token"
+                />
+                <button onClick={handleVerify2FA}>Verify 2FA</button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
