@@ -1,4 +1,4 @@
-/* dashboard.css */
+/* Main container */
 .dashboard-container {
   max-width: 800px;
   margin: 0 auto;
@@ -6,8 +6,15 @@
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.dashboard-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Header section */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -18,6 +25,7 @@
 .dashboard-header h1 {
   font-size: 24px;
   margin: 0;
+  color: #333;
 }
 
 .profile-section {
@@ -26,12 +34,18 @@
   align-items: center;
 }
 
+/* Profile image */
 .profile-image {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
+  transition: box-shadow 0.3s ease;
+}
+
+.profile-image:hover {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .profile-placeholder {
@@ -47,6 +61,7 @@
   margin-bottom: 10px;
 }
 
+/* Content section */
 .dashboard-content {
   margin-top: 20px;
 }
@@ -54,6 +69,8 @@
 .dashboard-content p {
   font-size: 18px;
   margin: 10px 0;
+  color: #555;
+  line-height: 1.6;
 }
 
 .dashboard-link {
@@ -71,6 +88,7 @@
   background-color: #0056b3;
 }
 
+/* Button styles */
 .dashboard-button {
   padding: 10px 20px;
   background-color: #28a745;
@@ -84,4 +102,98 @@
 
 .dashboard-button:hover {
   background-color: #218838;
+}
+
+/* 2FA section */
+._2fa-status-container {
+  background-color: #fff;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+._2fa-status-container:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.status-message {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+/* QR Code section */
+.qr-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.qr-container img {
+  margin: 10px 0;
+  border: 2px solid #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+.qr-container img:hover {
+  border-color: #007bff;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.auth-input:focus {
+  border-color: #007bff;
+}
+
+/* Logout button */
+.logout-button {
+  padding: 10px 20px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  margin: 20px auto 0;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #e53935;
+}
+
+/* Article section for 2FA explanation */
+.article-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.article-container:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.article-container h2 {
+  color: #4caf50;
+  margin-bottom: 10px;
+}
+
+.article-container p {
+  color: #555;
+  line-height: 1.6;
 }
