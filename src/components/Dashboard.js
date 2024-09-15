@@ -6,8 +6,8 @@ const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [qrCode, setQrCode] = useState("");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [twoFAToken, setTwoFAToken] = useState(""); // טוקן 2FA
-  const [loading, setLoading] = useState(true); // מצב טעינה
+  const [twoFAToken, setTwoFAToken] = useState(""); // 2FA token
+  const [loading, setLoading] = useState(true); // Loading state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +15,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/"); // אין טוקן, מחזיר לדף ההתחברות
+          navigate("/"); // No token, redirect to login page
           return;
         }
 
@@ -26,21 +26,21 @@ const Dashboard = () => {
         });
 
         setUserData(res.data);
-        setIs2FAEnabled(res.data.twoFactorEnabled); // בדיקה אם ה-2FA מופעל
-        setLoading(false); // כיבוי מצב הטעינה לאחר קבלת הנתונים
+        setIs2FAEnabled(res.data.twoFactorEnabled); // Update 2FA status based on server response
+        setLoading(false); // Turn off loading after data is received
       } catch (err) {
         console.error(err);
-        navigate("/"); // יש בעיה עם הטוקן או החיבור, מחזיר לדף ההתחברות
+        navigate("/"); // If there's an issue with token or connection, redirect to login
       }
     };
 
     fetchData();
   }, [navigate]);
 
-  // פונקציית התנתקות
+  // Logout function
   const handleLogout = () => {
-    localStorage.removeItem("token"); // מחיקת הטוקן מה-localStorage
-    navigate("/"); // הפניה חזרה לדף ההתחברות
+    localStorage.removeItem("token"); // Remove token from localStorage
+    navigate("/"); // Redirect to login page
   };
 
   const handleEnable2FA = async () => {
@@ -55,7 +55,7 @@ const Dashboard = () => {
           },
         }
       );
-      setQrCode(res.data.qrCode); // הצגת קוד QR לסריקה
+      setQrCode(res.data.qrCode); // Show QR code for scanning
     } catch (err) {
       console.error("Failed to enable 2FA", err);
     }
@@ -73,8 +73,8 @@ const Dashboard = () => {
           },
         }
       );
-      setIs2FAEnabled(false); // עדכון סטטוס 2FA
-      setQrCode(""); // הסרת ה-QR
+      setIs2FAEnabled(false); // Update 2FA status
+      setQrCode(""); // Clear QR code
     } catch (err) {
       console.error("Failed to disable 2FA", err);
     }
@@ -85,7 +85,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
       const res = await axios.post(
         "/api/auth/2fa/verify",
-        { userId: userData._id, token: twoFAToken }, // שליחת טוקן ה-2FA שהוזן
+        { userId: userData._id, token: twoFAToken }, // Send entered 2FA token for verification
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -94,8 +94,8 @@ const Dashboard = () => {
       );
       if (res.data.verified) {
         alert("2FA verified successfully!");
-        setIs2FAEnabled(true);
-        setQrCode(""); // הסרת קוד ה-QR לאחר אימות מוצלח
+        setIs2FAEnabled(true); // Mark 2FA as enabled after successful verification
+        setQrCode(""); // Clear QR code after successful verification
       } else {
         alert("Invalid 2FA token.");
       }
@@ -106,7 +106,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // מצב טעינה עד שהנתונים יגיעו
+    return <div>Loading...</div>; // Show loading state until data is fetched
   }
 
   return (
