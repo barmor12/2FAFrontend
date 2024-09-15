@@ -12,7 +12,7 @@ const Login = () => {
   const [userId, setUserId] = useState("");
   const navigate = useNavigate();
 
-  // תהליך ההתחברות
+  // Login process
   const handleLogin = async () => {
     try {
       const res = await axios.post("/api/auth/login", { email, password });
@@ -21,9 +21,9 @@ const Login = () => {
         setQrCode(res.data.qrCode);
         setUserId(res.data.userId);
       } else {
-        // שמירת הטוקן
+        // Save token
         localStorage.setItem("token", res.data.token);
-        console.log("Token saved: ", res.data.token); // בדיקת שמירת הטוקן
+        console.log("Token saved: ", res.data.token); // Checking if token is saved
         navigate("/dashboard");
       }
     } catch (err) {
@@ -32,7 +32,7 @@ const Login = () => {
     }
   };
 
-  // תהליך אימות 2FA
+  // 2FA verification process
   const handleVerify2FA = async () => {
     try {
       const res = await axios.post("/api/auth/2fa/verify", { userId, token });
